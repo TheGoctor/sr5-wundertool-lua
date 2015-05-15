@@ -75,6 +75,7 @@ function Character:Defend( attack_hits, attack_weapon, mods )
     damage_taken = math.max(modified_damage - Roll(resist_pool), 0);
     print( self.name .. " took " .. damage_taken .. " " .. damage_type .. " damage!" );
     print( self.name .. " has a max physical condition limit of " .. self:MaxPhysicalCondition() );
+    print( self.name .. " will die when damage exceeds " .. self:MaxPhysicalCondition() + self.bod .. " points.");
 end
 
 function Character:GetSkillLevel( skill_name )
@@ -147,6 +148,75 @@ function Character:ListWeapons()
     print( "Listing " .. self.name .. "'s weapons:" );
     for k,v in pairs( self.weapon ) do
         print( "  " .. k );
+    end
+end
+
+function Character:CastSpell(spellName, force, defenders)
+    local spell = self.spells[spellName];
+    local pool = self:GetSkillLevel("spellcasting");
+    local drainDamageType = ""
+    if verbose then
+      print( self.name .. " is casting " .. spellName .. " with a pool of " .. pool );
+    end
+
+    -- Max force is MAGIC * 2
+    force = math.min(force, self.mag * 2);
+    if verbose then
+        print( "Force is " .. force );
+    end
+
+    local hits = Roll(pool);
+    hits = math.min(hits, force);
+
+    if hits > self.mag then
+        drainDamageType = "P";
+    else
+        drainDamageType = "S";
+    end
+
+    -- Roll for Damage
+    for i, defender in ipairs(defenders) do
+        local defPool = 0;
+        local damage = 0;
+        if spell.direct == true then
+            if spell.type == "P" then
+                defPool = defender.bod;
+            elseif spell.type == "M" then
+                defPool = defender.wil;
+            end
+        elseif spell.direct == false then
+            defPool = defender.rea + defender.int;
+            damage = force;
+        end
+        if verbose then
+            --print( defender.name .. " is defending with " .. defPool );
+        end
+        local defHits = Roll(defPool);
+        damage = damage + hits - defHits;
+
+        -- If indirect, defender can resist Damage
+        if spell.direct == false then
+            local h = Roll(defender.bod + defender.armor_rating - force);
+            print( defender.name .. " resists " .. h .. " points of damage!" );
+            damage = damage - h;
+        end
+
+        print( defender.name .. " takes " .. damage .. (spell.dmg or "") .. " damage!");
+    end
+
+    -- Drain can't be lower than 2
+    local drain = math.max(force + spell.drain, 2);
+    local drainResist = self.log + self.wil;
+    if verbose then
+        print( "Resisting drain of " .. drain .. " with pool of " .. drainResist );
+    end
+
+    local dHits = Roll(drainResist);
+    if verbose then
+        print( self.name .. " takes " .. math.max(drain - dHits, 0) .. drainDamageType .. " damage from drain!" );
+        if spell.page then
+            print( "Read more on page " .. spell.page )
+        end
     end
 end
 

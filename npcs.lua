@@ -489,6 +489,7 @@ Shedim = {
         unarmed = { pool = 12 },
     },
     weapon = {
+        unarmed = { skill = "unarmed" },
     },
     powers = {
         "Astral Form",
@@ -529,6 +530,7 @@ Doctor = Character{
         unarmed = { pool = 16 },
     },
     weapon = {
+        unarmed = { skill = "unarmed" },
     },
     powers = {
         "Astral Form",
@@ -546,14 +548,14 @@ Doctor = Character{
         "Noxious Breath",
     },
     spells = {
-        "Armor",
-        "Ball Lightning",
-        "Death Touch",
-        "Detect Life",
-        "Levitate",
-        "Powerbolt",
-        "Poltergeist",
-        "Toxic Wave",
+        armor = { type = "P", drain = -2, range = "LOS", duration = "S", page = 292 },
+        ball_lightning = { direct = false, elemental = "electric", type = "P", drain = -1, range = "LOS (A)", dmg = "P", duration = "I", page = 284 },
+        death_touch = { direct = true, type = "M", drain = -6, range = "T", dmg = "P", duration = "I", page = 284 },
+        detect_life = { type = "M", drain = -3, range = "T", duration = "S", page = 286 },
+        levitate = { type = "P", drain = -2, range = "LOS", duration = "S", page = 293 },
+        powerbolt = { direct = true, type = "P", drain = -3, range = "LOS", dmg = "P", duration = "I", page = 284 },
+        poltergeist = { type = "P", drain = -2, range = "LOS (A)", duration = "S", page = 294 },
+        toxic_wave = { direct = false, elemental = "acid", type = "P", drain = -1, range = "LOS (A)", dmg = "P", duration = "I", page = 283 },
     },
     movement = "12/24/+2",
     armor_rating = 0,
@@ -583,6 +585,7 @@ Spazz = Character{
         unarmed = { pool = 14 },
     },
     weapon = {
+        unarmed = { skill = "unarmed" },
         steyr_tmp = { skill = "auto", acc = 4, dmg = 7, ap = 0, rc = 0 },
     },
     movement = "18/36/+2",

@@ -1,5 +1,7 @@
 -- Tables for players' characters
 
+require "character"
+
 Albert = Character{
     name = "An Gai Shan (Gekido)",
     bod = 7,

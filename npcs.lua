@@ -1,5 +1,8 @@
 -- NPC stats
---[[
+
+require "character"
+
+-- Critters
 GabrielHounds = {
     name = "GabrielHound",
     bod = 3,
@@ -264,6 +267,46 @@ NeoTribalWarrior = {
     init_dice = 1,
 };
 
+Shedim = {
+    name = "Shedim",
+    bod = 6,
+    agi = 6,
+    rea = 8,
+    str = 6,
+    wil = 6,
+    log = 6,
+    int = 6,
+    cha = 6,
+    edg = 6,
+    ess = 6,
+    mag = 6,
+    force = 6,
+    skills = {
+        assensing = { pool = 12 },
+        astral_combat = { pool = 12 },
+        gymnastics = { pool = 14 },
+        perception = { pool = 12 },
+        unarmed = { pool = 12 },
+    },
+    weapon = {
+        unarmed = { skill = "unarmed" },
+    },
+    powers = {
+        "Astral Form",
+        "Deathly Aura",
+        "Energy Drain (Karma, Touch Range, Physical Damage)",
+        "Fear",
+        "Immunity (Age, Pathogens, Toxins)",
+        "Paralyzing Touch",
+        "Sapience",
+        "Shadow Cloak",
+    },
+    movement = "12/24/+2",
+    armor_rating = 0,
+    init_dice = 2,
+};
+
+-- Prime runners
 Donnie = Character{
     name = "Donnie Hua",
     bod = 3,
@@ -465,45 +508,6 @@ Daughter = Character{
     movement = "10/20/+2",
     armor_rating = 12,
     init_dice = 1,
-};
---]]
-Shedim = {
-    name = "Shedim",
-    bod = 6,
-    agi = 6,
-    rea = 8,
-    str = 6,
-    wil = 6,
-    log = 6,
-    int = 6,
-    cha = 6,
-    edg = 6,
-    ess = 6,
-    mag = 6,
-    force = 6,
-    skills = {
-        assensing = { pool = 12 },
-        astral_combat = { pool = 12 },
-        gymnastics = { pool = 14 },
-        perception = { pool = 12 },
-        unarmed = { pool = 12 },
-    },
-    weapon = {
-        unarmed = { skill = "unarmed" },
-    },
-    powers = {
-        "Astral Form",
-        "Deathly Aura",
-        "Energy Drain (Karma, Touch Range, Physical Damage)",
-        "Fear",
-        "Immunity (Age, Pathogens, Toxins)",
-        "Paralyzing Touch",
-        "Sapience",
-        "Shadow Cloak",
-    },
-    movement = "12/24/+2",
-    armor_rating = 0,
-    init_dice = 2,
 };
 
 Doctor = Character{

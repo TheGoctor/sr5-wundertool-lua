@@ -1,5 +1,7 @@
 -- Character Table Creator
 
+require "rolls"
+
 Character = {};
 Character.__index = Character;
 Character.__registry = {};
@@ -160,11 +162,11 @@ function Character:MaxStunCondition()
     return math.ceil(self.wil / 2) + 8;
 end
 
-function Character:RollInit( mods )
+function Character:RollInitiative(modifier)
     local pool = self.init_dice;
     local h, m, sum = Roll( pool );
-    mods = (mods or 0) + self:GetWoundModifiers();
-    local init = self.rea + self.int + sum + mods;
+    modifier = (modifier or 0) + self:GetWoundModifiers();
+    local init = self.rea + self.int + sum + modifier;
     print( self.name .. " rolled initiative of " .. init );
     return init;
 end
@@ -264,9 +266,4 @@ function Character:CastSpell(spellName, force, defenders)
             print( "Read more on page " .. spell.page )
         end
     end
-end
-
-function TestCombat( att, awep, def )
-    local hits, wep = att:Attack( awep, 0 );
-    local dmg = def:Defend( hits, wep, 0 );
 end

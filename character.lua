@@ -26,9 +26,13 @@ function Character:Attack( weapon_name, mods )
         weapon = self:GetUnarmed();
     end
     local limit = weapon.acc;
-    local pool = self:GetSkillLevel( weapon.skill ) + (mods or 0) + (ENV_MODS or 0);
+
+    -- Apply wound modifiers
+    mods = (mods or 0) + self:GetWoundModifiers();
+
+    local pool = self:GetSkillLevel( weapon.skill ) + mods + (ENV_MODS or 0);
     if verbose then
-      print( self.name .. " is attacking with a pool of " .. pool );
+        print( self.name .. " is attacking with a pool of " .. pool );
     end
     local hits = Roll( pool );
     return math.min( hits, limit ), weapon;
@@ -36,10 +40,11 @@ end
 
 function Character:Defend( attack_hits, attack_weapon, mods )
     -- Reaction + Intuition +/- Modifiers
-    local pool = self.rea + self.int + (mods or 0) + (ENV_MODS or 0);
+    mods = (mods or 0) + self:GetWoundModifiers();
+    local pool = self.rea + self.int + mods + (ENV_MODS or 0);
 
     if verbose then
-      print( self.name .. " is defending with a pool of " .. pool );
+        print( self.name .. " is defending with a pool of " .. pool );
     end
     local defend_hits = Roll( pool );
 
@@ -60,20 +65,24 @@ function Character:Defend( attack_hits, attack_weapon, mods )
     local modified_damage = attack_weapon.dmg + net_hits;
     local modified_armor = self.armor_rating - attack_weapon.ap;
     if verbose then
-      print( "Weapon Damage: " .. attack_weapon.dmg );
-      print( "Modified Damage: " .. modified_damage );
-      print( "Armor Rating: " .. self.armor_rating );
-      print( "Modified Armor: " .. modified_armor );
+        print( "Weapon Damage: " .. attack_weapon.dmg );
+        print( "Modified Damage: " .. modified_damage );
+        print( "Armor Rating: " .. self.armor_rating );
+        print( "Modified Armor: " .. modified_armor );
     end
 
-    local damage_type = (modified_damage >= modified_armor) and "Physical" or "Stun";
-    print( damage_type .. " Damage!" );
+    local damage_type = (modified_damage >= modified_armor) and "P" or "S";
 
     -- Resist Damage
     local resist_pool = self.bod + math.max(modified_armor, 0);
     print( self.name .. " is resisting with a pool of " .. resist_pool );
     damage_taken = math.max(modified_damage - Roll(resist_pool), 0);
-    print( self.name .. " took " .. damage_taken .. " " .. damage_type .. " damage!" );
+    print( self.name .. " took " .. damage_taken .. damage_type .. " damage!" );
+    if damage_type == "P" then
+        self:TakePhysicalDamage(damage_taken);
+    elseif damage_type == "S" then
+        self:TakeStunDamage(damage_taken);
+    end
     print( self.name .. " has a max physical condition limit of " .. self:MaxPhysicalCondition() );
     print( self.name .. " will die when damage exceeds " .. self:MaxPhysicalCondition() + self.bod .. " points.");
 end
@@ -114,11 +123,33 @@ function Character:GetLimit( limit_type )
 end
 
 function Character:TakePhysicalDamage( dmg )
-    self.physicalDamage = (self.physicalDamage or 0) - (dmg or 0);
+    self.physicalDamage = (self.physicalDamage or 0) + (dmg or 0);
+    if self.physicalDamage > self:MaxPhysicalCondition() then
+        if self.physicalDamage > self:MaxPhysicalCondition() + self.bod then
+            print(self.name .. " is dead :'(");
+        else
+            print(self.name .. " is dying!");
+        end
+    end
 end
 
 function Character:TakeStunDamage( dmg )
-    self.stunDamage = (self.stunDamage or 0) - (dmg or 0);
+    self.stunDamage = (self.stunDamage or 0) + (dmg or 0);
+    if self.stunDamage > self:MaxStunCondition() then
+        local overflow = self.stunDamage - self:MaxStunCondition();
+        local overflowDmg = math.floor(overflow / 2);
+        self.stunDamage = self:MaxStunCondition() + (overflow - overflowDmg * 2);
+        self:TakePhysicalDamage(overflowDmg);
+    end
+end
+
+function Character:GetWoundModifiers()
+    self.stunDamage = self.stunDamage or 0;
+    self.physicalDamage = self.physicalDamage or 0;
+    local mod =
+        math.floor(math.min(self.stunDamage, self:MaxStunCondition()) / 3) +
+        math.floor(math.min(self.physicalDamage, self:MaxPhysicalCondition()) / 3);
+    return -mod;
 end
 
 function Character:MaxPhysicalCondition()
@@ -132,7 +163,8 @@ end
 function Character:RollInit( mods )
     local pool = self.init_dice;
     local h, m, sum = Roll( pool );
-    local init = self.rea + self.int + sum + (mods or 0);
+    mods = (mods or 0) + self:GetWoundModifiers();
+    local init = self.rea + self.int + sum + mods;
     print( self.name .. " rolled initiative of " .. init );
     return init;
 end
@@ -154,6 +186,8 @@ end
 function Character:CastSpell(spellName, force, defenders)
     local spell = self.spells[spellName];
     local pool = self:GetSkillLevel("spellcasting");
+    -- Apply wound modifiers
+    pool = pool + self:GetWoundModifiers();
     local drainDamageType = ""
     if verbose then
       print( self.name .. " is casting " .. spellName .. " with a pool of " .. pool );
@@ -191,6 +225,7 @@ function Character:CastSpell(spellName, force, defenders)
         if verbose then
             --print( defender.name .. " is defending with " .. defPool );
         end
+        defPool = defPool + defender:GetWoundModifiers();
         local defHits = Roll(defPool);
         damage = damage + hits - defHits;
 
@@ -202,6 +237,11 @@ function Character:CastSpell(spellName, force, defenders)
         end
 
         print( defender.name .. " takes " .. damage .. (spell.dmg or "") .. " damage!");
+        if spell.dmg == "P" then
+            defender:TakePhysicalDamage(damage);
+        elseif spell.dmg == "S" then
+            defender:TakeStunDamage(damage);
+        end
     end
 
     -- Drain can't be lower than 2
@@ -212,8 +252,14 @@ function Character:CastSpell(spellName, force, defenders)
     end
 
     local dHits = Roll(drainResist);
+    local drainDamage = math.max(drain - dHits, 0);
     if verbose then
-        print( self.name .. " takes " .. math.max(drain - dHits, 0) .. drainDamageType .. " damage from drain!" );
+        print( self.name .. " takes " .. drainDamage .. drainDamageType .. " damage from drain!" );
+        if drainDamageType == "P" then
+            self:TakePhysicalDamage(drainDamage);
+        elseif drainDamageType == "S" then
+            self:TakeStunDamage(drainDamage);
+        end
         if spell.page then
             print( "Read more on page " .. spell.page )
         end

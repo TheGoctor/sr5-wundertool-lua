@@ -24,20 +24,22 @@ function BeginTurn(players)
         table.insert(init_table, {c=v,i=v:RollInitiative()});
     end
 
-    table.sort(init_table, function(a,b)
-        if a.i ~= b.i then
-            return a.i > b.i;
-        elseif a.c.edg ~= b.c.edg then
-            return a.c.edg > b.c.edg;
-        elseif a.c.rea ~= b.c.rea then
-            return a.c.rea > b.c.rea;
-        elseif a.c.int ~= b.c.int then
-            return a.c.int > b.c.int;
-        else
-            -- Determine by coin toss
-            return (math.random(2) == 1);
+    table.sort(init_table,
+        function(a,b)
+            if a.i ~= b.i then
+                return a.i > b.i;
+            elseif a.c.edg ~= b.c.edg then
+                return a.c.edg > b.c.edg;
+            elseif a.c.rea ~= b.c.rea then
+                return a.c.rea > b.c.rea;
+            elseif a.c.int ~= b.c.int then
+                return a.c.int > b.c.int;
+            else
+                -- Determine by coin toss
+                return (math.random(2) == 1);
+            end
         end
-    end);
+    );
 
     print("Initiative Order:");
     for i,v in ipairs(init_table) do

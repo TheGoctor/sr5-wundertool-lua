@@ -1,4 +1,8 @@
--- Tables for players' characters
+--------------------------------------------------------------------------------
+-- Character definitions for each player.
+-- @author Mac Reichelt
+-- @copyright Copyright (c) 2015 Mac Reichelt
+--------------------------------------------------------------------------------
 
 require "character"
 
@@ -387,6 +391,8 @@ Jason = Character{
     init_dice = 1,
 };
 
+--------------------------------------------------------------------------------
+-- Table of all player instances
 players = {
   Albert,
   Tommy,

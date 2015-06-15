@@ -1,4 +1,8 @@
--- NPC stats
+--------------------------------------------------------------------------------
+-- Character definitions for various critters and Prime Runners.
+-- @author Mac Reichelt
+-- @copyright Copyright (c) 2015 Mac Reichelt
+--------------------------------------------------------------------------------
 
 require "character"
 

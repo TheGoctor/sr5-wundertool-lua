@@ -148,7 +148,10 @@ end
 --------------------------------------------------------------------------------
 function Character:GetUnarmed()
     -- See if the character already has an unarmed weapon
-    local weapon = self.weapon["unarmed"] or self.weapon["bite"] or self.weapon["claws"] or {};
+    local weapon = self.weapon["unarmed"] or
+                   self.weapon["bite"] or
+                   self.weapon["claws"] or
+                   {};
     weapon.acc = weapon.acc or self:GetLimit("physical");
     weapon.dmg = weapon.dmg or self.str;
     weapon.ap = weapon.ap or 0;
@@ -186,6 +189,10 @@ end
 -- @param damage The amount of physical damage to be taken.
 --------------------------------------------------------------------------------
 function Character:TakePhysicalDamage(damage)
+    if verbose then
+        print(self.name .. " took " .. damage .. "P damage!");
+    end
+
     -- Initialize physicalDamage if necessary
     self.physicalDamage = (self.physicalDamage or 0) + (damage or 0);
     local overflow = self.physicalDamage - self:MaxPhysicalCondition();
@@ -205,12 +212,15 @@ end
 -- @param damage The amount of stun damage to be taken.
 --------------------------------------------------------------------------------
 function Character:TakeStunDamage(damage)
+    if verbose then
+        print(self.name .. " took " .. damage .. "S damage!");
+    end
     -- Initialize stunDamage if necessaary
-    self.stunDamage = (self.stunDamage or 0) + (dmg or 0);
+    self.stunDamage = (self.stunDamage or 0) + (damage or 0);
     local overflow = self.stunDamage - self:MaxStunCondition();
     if overflow > 0 then
         local overflowDamage = math.floor(overflow / 2);
-        self.stunDamage = self:MaxStunCondition() + (overflow - overflowDmg * 2);
+        self.stunDamage = self:MaxStunCondition() + (overflow - overflowDamage * 2);
         self:TakePhysicalDamage(overflowDamage);
     end
 end
@@ -308,7 +318,7 @@ function Character:CastSpell(spell_name, force, defenders)
     pool = pool + self:GetWoundModifiers();
     local drain_damage_type = ""
     if verbose then
-        print(self.name .. " is casting " .. spell_name .. " with a pool of " .. pool);
+        print(self.name .. " is casting " .. spell_name .. ". Pool = " .. pool);
     end
 
     -- Max force is MAGIC * 2
@@ -354,7 +364,6 @@ function Character:CastSpell(spell_name, force, defenders)
             damage = damage - h;
         end
 
-        print(defender.name .. " takes " .. damage .. (spell.dmg or "") .. " damage!");
         if spell.dmg == "P" then
             defender:TakePhysicalDamage(damage);
         elseif spell.dmg == "S" then
@@ -371,15 +380,14 @@ function Character:CastSpell(spell_name, force, defenders)
 
     local dHits = Roll(drainResist);
     local drainDamage = math.max(drain - dHits, 0);
-    if verbose then
-        print(self.name .. " takes " .. drainDamage .. drain_damage_type .. " damage from drain!");
-        if drain_damage_type == "P" then
-            self:TakePhysicalDamage(drainDamage);
-        elseif drain_damage_type == "S" then
-            self:TakeStunDamage(drainDamage);
-        end
-        if spell.page then
-            print("Read more on page " .. spell.page);
-        end
+
+    if drain_damage_type == "P" then
+        self:TakePhysicalDamage(drainDamage);
+    elseif drain_damage_type == "S" then
+        self:TakeStunDamage(drainDamage);
+    end
+
+    if verbose and spell.page then
+        print("Read more on page " .. spell.page);
     end
 end

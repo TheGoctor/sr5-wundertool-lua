@@ -131,14 +131,21 @@ end
 --------------------------------------------------------------------------------
 function Character:GetSkillLevel(skill_name)
     local skill = self.skills[skill_name];
-    local level = skill.pool or (skill.rating + skill.mod + self[skill.att]);
+    local level = 0;
 
-    -- Handle untrained skills
-    if skill.rating == 0 then
-      return self[skill.att] - 1;
+    if skill.pool then
+        -- Pre-calculated dice pool
+        level = skill.pool;
+    elseif skill.rating == 0 then
+        -- Defaulting
+        level = self[skill.att] - 1;
+    else
+        -- Normal skill test
+        level = skill.rating + skill.mod + self[skill.att];
     end
 
-    return level;
+    -- Can't have less than no skill...right?
+    return math.max(0, level);
 end
 
 --------------------------------------------------------------------------------

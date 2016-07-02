@@ -37,4 +37,7 @@
     "body_cannot_be_empty": true,
     "body_must_include_reproduction_steps": true
   }
+  "contributing.md": {
+    "autogenerate": true
+  }
 }
